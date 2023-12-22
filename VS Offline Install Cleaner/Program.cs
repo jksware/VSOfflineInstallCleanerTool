@@ -1,66 +1,54 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Collections.Generic;
 
 namespace VsOfflineInstallCleaner
 {
     internal class Program
     {
-        const string unneededPackagesfolderName = "ToBeRemoved";
+        const string unneededPackagesFolderName = "ToBeRemoved";
         public const string CertificatesDirName = "certificates";
-
 
         internal static void Main(string[] args)
         {
-            string vsOfflineDirectory = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string vsOfflineDirectory = args.Length > 0
+                ? args[0]
+                : Path.GetDirectoryName(Directory.GetCurrentDirectory());
+
+            Console.Error.WriteLine($"Visual Studio Offline Directory: '{vsOfflineDirectory}'");
+
             string catalogFileName = "Catalog.json";
+            if (args.Length > 1)
+                catalogFileName = args[1];
 
-            Console.WriteLine($"Please Enter Visual Studio Offline Directory [Default : {vsOfflineDirectory}]");
-            string tempVsOfflineDirectory = Console.ReadLine();
+            Console.Error.WriteLine($"CatalogFileName: '{catalogFileName}'");
 
-            if (!string.IsNullOrEmpty(tempVsOfflineDirectory))
-                vsOfflineDirectory = tempVsOfflineDirectory;
+            var folderNames = CleanVs.GetFolderNames(vsOfflineDirectory);
+            Console.Error.WriteLine($"Number of Folder before cleanup : {folderNames.Count}");
 
-            Console.WriteLine($"Please Enter CatalogFileName [Default : {catalogFileName}]");
-            string tempCatalogFileName = Console.ReadLine();
+            var packageNames = CleanVs.GetPackageNames(Path.Combine(vsOfflineDirectory, catalogFileName));
+            Console.Error.WriteLine($"Number of Packages in the catalog File: {packageNames.Count}");
 
-            if (!string.IsNullOrEmpty(tempCatalogFileName))
-                catalogFileName = tempCatalogFileName;
+            folderNames.ExceptWith([CertificatesDirName, unneededPackagesFolderName]);
+            folderNames.ExceptWith(packageNames);
 
-            HashSet<string> folderNames = new CleanVs().GetFolderNames(vsOfflineDirectory);
-            Console.WriteLine($"Number of Folder before cleanup : {folderNames.Count}");
+            long bytesToMove = DirectorySize.GetFolderSize(folderNames.Select(x => Path.Combine(vsOfflineDirectory, x)));
+            Console.Error.WriteLine($"Folder to be Cleaned: {folderNames.Count}. Size: {DirectorySize.GetHumanReadableSize(bytesToMove)}");
+            Console.Error.WriteLine($"Number of Folder Needs to be Cleaned : {folderNames.Count}");
 
-            HashSet<string> packageNames = new CleanVs().GetPackageNames(vsOfflineDirectory + "\\" + catalogFileName);
-            //Console.WriteLine($"Number of Packages in the catalog File : {packageNames.Count}");
-
-            IEnumerable<string> pakagesNotListedInCatalog = folderNames.Except(packageNames, StringComparer.OrdinalIgnoreCase)
-                .Where(p => !CertificatesDirName.Equals(p) && !unneededPackagesfolderName.Equals(p))
-                .ToHashSet();
-            if (pakagesNotListedInCatalog.Count() < 1)
-            {
-                Console.WriteLine("Press any key to Exit");
-                Console.ReadLine();
-                return;
-            }
-
-            Console.WriteLine($"Number of Folder Needs to be Cleaned : {pakagesNotListedInCatalog.Count()}");
-
-            Console.WriteLine($@"Unneeded Folder will be moved to ""{unneededPackagesfolderName}"" Folder");
-            new CleanVs().MoveUnneededPackagesToUnneededPackagesfolderFolder(vsOfflineDirectory, pakagesNotListedInCatalog, unneededPackagesfolderName);
+            Console.Error.WriteLine($@"Unneeded Folder will be moved to '{unneededPackagesFolderName}' Folder");
+            CleanVs.MoveFolders(vsOfflineDirectory, folderNames, unneededPackagesFolderName);
 
             try
             {
-                string savedDiskSpace = DirectorySize.GetFolderSize($@"{vsOfflineDirectory}\{unneededPackagesfolderName}");
-                Console.WriteLine($@"Yaaay cleanup process is Done, Saved about {savedDiskSpace} in disk Space, Please Remove the ""{unneededPackagesfolderName}"" directory to Save Disk Space");
+                long savedDiskSpaceBytes = DirectorySize.GetFolderSize(Path.Combine(vsOfflineDirectory, unneededPackagesFolderName));
+                string humanReadableSize = DirectorySize.GetHumanReadableSize(savedDiskSpaceBytes);
+                Console.Error.WriteLine($@"Cleanup process is done, moving about {humanReadableSize}. Remove the '{unneededPackagesFolderName}' directory to save disk space.");
             }
             catch (Exception)
             {
-                Console.WriteLine($@"Yaaay cleanup process is Done, Please Remove the ""{unneededPackagesfolderName}"" directory to Save Disk Space");
+                Console.Error.WriteLine($@"Error when trying to clean directory.");
             }
-
-            Console.WriteLine("Press any key to Exit");
-            Console.ReadLine();
         }
     }
 }
