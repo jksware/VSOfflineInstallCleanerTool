@@ -14,15 +14,16 @@ namespace VsOfflineInstallCleaner
             return dirSizeString;
         }
 
-        private static string BytesToString(long byteCount)
+        public static string GetHumanReadableSize(long bytes)
         {
-            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
-            if (byteCount == 0)
-                return "0" + suf[0];
-            long bytes = Math.Abs(byteCount);
-            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
-            return (Math.Sign(byteCount) * num) + suf[place];
+            ReadOnlySpan<string> suffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
+
+            bytes = Math.Abs(bytes);
+            int logBase1024 = (int)long.Log2(bytes) / 10;
+            int logBase2 = logBase1024 * 10;
+
+            float significand = MathF.Round(bytes / (float)(1L << logBase2), 1);
+            return significand + suffixes[logBase1024];
         }
     }
 }
