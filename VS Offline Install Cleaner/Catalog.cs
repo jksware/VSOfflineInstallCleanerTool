@@ -5,15 +5,6 @@ namespace VsOfflineInstallCleaner
 {
     public class Catalog
     {
-        [JsonProperty("manifestVersion")]
-        public string ManifestVersion { get; set; }
-
-        [JsonProperty("engineVersion")]
-        public string EngineVersion { get; set; }
-
-        [JsonProperty("info")]
-        public IDictionary<string, string> Info { get; set; }
-
         [JsonProperty("packages")]
         public IList<Package> Packages { get; set; }
     }
