@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace VsOfflineInstallCleaner
 {
@@ -31,7 +31,6 @@ namespace VsOfflineInstallCleaner
         [JsonProperty("type")]
         public string Type { get; set; }
 
-
         [JsonProperty("id")]
         public string Id { get; set; }
 
@@ -48,10 +47,9 @@ namespace VsOfflineInstallCleaner
         public string Branch { get; set; }
 
         [JsonProperty("productarch")]
-        public string Productarch { get; set; }
+        public string ProductArch { get; set; }
 
         [JsonProperty("machinearch")]
-        public string Machinearch { get; set; }
-
+        public string MachineArch { get; set; }
     }
 }
