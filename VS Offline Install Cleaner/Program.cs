@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 
-namespace VS_Offline_Install_Cleaner
+namespace VsOfflineInstallCleaner
 {
     internal class Program
     {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace VS_Offline_Install_Cleaner
+namespace VsOfflineInstallCleaner
 {
     public class CleanVs
     {

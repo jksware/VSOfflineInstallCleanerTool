@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace VS_Offline_Install_Cleaner
+namespace VsOfflineInstallCleaner
 {
     public class Catalog
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VS_Offline_Install_Cleaner
+namespace VsOfflineInstallCleaner
 {
     internal static class DirectorySize
     {
