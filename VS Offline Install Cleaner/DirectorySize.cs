@@ -1,17 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace VsOfflineInstallCleaner
 {
     internal static class DirectorySize
     {
-        public static string GetFolderSize(string folderPath)
+        public static long GetFolderSize(string folderPath)
         {
-            Scripting.FileSystemObject fso = new Scripting.FileSystemObject();
-            Scripting.Folder folder = fso.GetFolder(folderPath);
-            dynamic dirSize = folder.Size;
-            long dirSizeInt = Convert.ToInt64(dirSize);
-            string dirSizeString = BytesToString(dirSizeInt);
-            return dirSizeString;
+            var directoryInfo = new DirectoryInfo(folderPath);
+            return directoryInfo
+                .EnumerateFiles("*", SearchOption.AllDirectories)
+                .Sum(x => x.Length);
+        }
+
+        public static long GetFolderSize(IEnumerable<string> filePaths)
+        {
+            return filePaths.Sum(GetFolderSize);
         }
 
         public static string GetHumanReadableSize(long bytes)
