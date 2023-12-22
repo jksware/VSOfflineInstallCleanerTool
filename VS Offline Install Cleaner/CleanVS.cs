@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
 
 namespace VsOfflineInstallCleaner
 {
@@ -9,72 +10,72 @@ namespace VsOfflineInstallCleaner
     {
         internal static void MoveFolders(string vsOfflineDirectory, IEnumerable<string> sources, string destinationFolder)
         {
-            bool exists = Directory.Exists($@"{vsOfflineDirectory}\{unneededPackagesfolderName}");
+            destinationFolder = Path.Combine(vsOfflineDirectory, destinationFolder);
+
+            bool exists = Directory.Exists(destinationFolder);
 
             if (!exists)
-                Directory.CreateDirectory($@"{vsOfflineDirectory}\{unneededPackagesfolderName}");
+                Directory.CreateDirectory(destinationFolder);
 
-            Directory.CreateDirectory($@"{vsOfflineDirectory}\{unneededPackagesfolderName}");
-
-            foreach (string packageFolderName in pakagesTobeMoved)
+            foreach (string path in sources)
             {
-                string sourceDirName = $@"{vsOfflineDirectory}\{packageFolderName}";
-                string destinationDirName = $@"{vsOfflineDirectory}\{unneededPackagesfolderName}\{packageFolderName}";
+                string sourcePath = Path.Combine(vsOfflineDirectory, path);
+                string destinationPath = Path.Combine(destinationFolder, path);
 
                 try
                 {
-                    Directory.Move(sourceDirName, destinationDirName);
+                    Console.Error.WriteLine($"Moving '{path}'...");
+                    Directory.Move(sourcePath, destinationPath);
                 }
-                catch (System.Exception)
+                catch (Exception)
                 {
-                    // ignored
+                    Console.Error.WriteLine($"Error moving '{path}' to '{destinationFolder}'.");
                 }
             }
         }
-        internal HashSet<string> GetPackageNames(string catalogFileName)
-        {
 
         internal static List<string> GetPackageNames(string catalogFileName)
         {
             string catalogFileContent = File.ReadAllText(catalogFileName);
 
-            Catalog catalog = JsonConvert.DeserializeObject<Catalog>(catalogFileContent);
+            var catalog = JsonConvert.DeserializeObject<Catalog>(catalogFileContent);
 
-            List<string> packageNames = new List<string>();
+            List<string> result = [];
 
-            foreach (Package package in catalog.Packages)
+            foreach (var package in catalog.Packages)
             {
-                string currentpackageName = package.Id;
+                string packageName = package.Id;
 
                 if (!string.IsNullOrEmpty(package.Version))
-                    currentpackageName += $",version={package.Version}";
+                    packageName += $",version={package.Version}";
 
                 if (!string.IsNullOrEmpty(package.Chip))
-                    currentpackageName += $",chip={package.Chip}";
+                    packageName += $",chip={package.Chip}";
 
                 if (!string.IsNullOrEmpty(package.Language))
-                    currentpackageName += $",language={package.Language}";
+                    packageName += $",language={package.Language}";
 
                 if (!string.IsNullOrEmpty(package.Branch))
-                    currentpackageName += $",branch={package.Branch}";
+                    packageName += $",branch={package.Branch}";
 
-                if (!string.IsNullOrEmpty(package.Productarch))
-                    currentpackageName += $",productarch={package.Productarch}";
+                if (!string.IsNullOrEmpty(package.ProductArch))
+                    packageName += $",productarch={package.ProductArch}";
 
-                if (!string.IsNullOrEmpty(package.Machinearch))
-                    currentpackageName += $",machinearch={package.Machinearch}";
+                if (!string.IsNullOrEmpty(package.MachineArch))
+                    packageName += $",machinearch={package.MachineArch}";
 
-                packageNames.Add(currentpackageName);
+                result.Add(packageName);
             }
-            return packageNames.ToHashSet();
+
+            return result;
         }
 
         internal static HashSet<string> GetFolderNames(string vsOfflineDirectory)
         {
-            var vsFolderNames = Directory.GetDirectories(vsOfflineDirectory)
-                .Select(folderpath => new DirectoryInfo(folderpath).Name);
-
-            return vsFolderNames.ToHashSet();
+            return Directory
+                .GetDirectories(vsOfflineDirectory)
+                .Select(folderpath => new DirectoryInfo(folderpath).Name)
+                .ToHashSet();
         }
     }
 }
