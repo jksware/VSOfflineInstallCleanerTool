@@ -5,9 +5,9 @@ using Newtonsoft.Json;
 
 namespace VsOfflineInstallCleaner
 {
-    public class CleanVs
+    public static class CleanVs
     {
-        internal void MoveUnneededPackagesToUnneededPackagesfolderFolder(string vsOfflineDirectory, IEnumerable<string> pakagesTobeMoved, string unneededPackagesfolderName)
+        internal static void MoveFolders(string vsOfflineDirectory, IEnumerable<string> sources, string destinationFolder)
         {
             bool exists = Directory.Exists($@"{vsOfflineDirectory}\{unneededPackagesfolderName}");
 
@@ -34,6 +34,8 @@ namespace VsOfflineInstallCleaner
         internal HashSet<string> GetPackageNames(string catalogFileName)
         {
 
+        internal static List<string> GetPackageNames(string catalogFileName)
+        {
             string catalogFileContent = File.ReadAllText(catalogFileName);
 
             Catalog catalog = JsonConvert.DeserializeObject<Catalog>(catalogFileContent);
@@ -67,7 +69,7 @@ namespace VsOfflineInstallCleaner
             return packageNames.ToHashSet();
         }
 
-        internal HashSet<string> GetFolderNames(string vsOfflineDirectory)
+        internal static HashSet<string> GetFolderNames(string vsOfflineDirectory)
         {
             var vsFolderNames = Directory.GetDirectories(vsOfflineDirectory)
                 .Select(folderpath => new DirectoryInfo(folderpath).Name);
