@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<PublishUrl>publish\</PublishUrl>
+		<AssemblyTitle>Visual Studio Offline Setup Folder Cleanup Tool</AssemblyTitle>
+		<Product>Visual Studio Offline Setup Folder Cleanup Tool</Product>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Properties\" />
+	</ItemGroup>
+</Project>
